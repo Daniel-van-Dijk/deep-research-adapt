@@ -3,12 +3,12 @@ import os
 import asyncio
 import requests
 
-from tavily import TavilyClient, AsyncTavilyClient
+#from tavily import TavilyClient, AsyncTavilyClient
 from open_deep_research.state import Section
 from langsmith import traceable
 
-tavily_client = TavilyClient()
-tavily_async_client = AsyncTavilyClient()
+#tavily_client = TavilyClient()
+#tavily_async_client = AsyncTavilyClient()
 
 def get_config_value(value):
     """
@@ -69,18 +69,18 @@ def format_sections(sections: list[Section]) -> str:
     formatted_str = ""
     for idx, section in enumerate(sections, 1):
         formatted_str += f"""
-{'='*60}
-Section {idx}: {section.name}
-{'='*60}
-Description:
-{section.description}
-Requires Research: 
-{section.research}
+                {'='*60}
+                Section {idx}: {section.name}
+                {'='*60}
+                Description:
+                {section.description}
+                Requires Research: 
+                {section.research}
 
-Content:
-{section.content if section.content else '[Not yet written]'}
+                Content:
+                {section.content if section.content else '[Not yet written]'}
 
-"""
+                """
     return formatted_str
 
 @traceable

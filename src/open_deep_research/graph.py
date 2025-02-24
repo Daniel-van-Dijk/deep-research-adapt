@@ -14,7 +14,7 @@ from open_deep_research.configuration import Configuration
 from open_deep_research.utils import tavily_search_async, deduplicate_and_format_sources, format_sections, perplexity_search, get_config_value
 
 # Nodes
-async def generate_report_plan(state: ReportState, config: RunnableConfig):
+def generate_report_plan(state: ReportState, config: RunnableConfig):
     """ Generate the report plan """
 
     # Inputs
@@ -42,22 +42,24 @@ async def generate_report_plan(state: ReportState, config: RunnableConfig):
     # Generate queries  
     results = structured_llm.invoke([SystemMessage(content=system_instructions_query)]+[HumanMessage(content="Generate search queries that will help with planning the sections of the report.")])
 
-    # Web search
+    # Web searchs
     query_list = [query.search_query for query in results.queries]
+    print(query_list)
+    # # Get the search API
+    # search_api = get_config_value(configurable.search_api)
 
-    # Get the search API
-    search_api = get_config_value(configurable.search_api)
-
-    # Search the web
-    if search_api == "tavily":
-        search_results = await tavily_search_async(query_list)
-        source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=1000, include_raw_content=False)
-    elif search_api == "perplexity":
-        search_results = perplexity_search(query_list)
-        source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=1000, include_raw_content=False)
-    else:
-        raise ValueError(f"Unsupported search API: {configurable.search_api}")
-
+    # # Search the web
+    # if search_api == "tavily":
+    #     search_results = await tavily_search_async(query_list)
+    #     source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=1000, include_raw_content=False)
+    # elif search_api == "perplexity":
+    #     search_results = perplexity_search(query_list)
+    #     source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=1000, include_raw_content=False)
+    # else:
+    #     raise ValueError(f"Unsupported search API: {configurable.search_api}")
+    source_str = """Conclusion and Future Development This analysis reveals a sophisticated LangGraph implementation that balances flexibility with structured workflows. Key architectural strengths include: Modular design enabling component replacement
+                Robust state management patterns Effective parallel processing implementation Comprehensive configuration management"""
+    
     # Format system instructions
     system_instructions_sections = report_planner_instructions.format(topic=topic, report_organization=report_structure, context=source_str, feedback=feedback)
 
@@ -85,22 +87,22 @@ async def generate_report_plan(state: ReportState, config: RunnableConfig):
 
     return {"sections": sections}
 
-def human_feedback(state: ReportState, config: RunnableConfig) -> Command[Literal["generate_report_plan","build_section_with_web_research"]]:
+def feedback_on_plan(state: ReportState, config: RunnableConfig) -> Command[Literal["generate_report_plan","build_section_with_web_research"]]:
     """ Get feedback on the report plan """
 
-    # Get sections
+    # # Get sections
     sections = state['sections']
-    sections_str = "\n\n".join(
-        f"Section: {section.name}\n"
-        f"Description: {section.description}\n"
-        f"Research needed: {'Yes' if section.research else 'No'}\n"
-        for section in sections
-    )
+    # sections_str = "\n\n".join(
+    #     f"Section: {section.name}\n"
+    #     f"Description: {section.description}\n"
+    #     f"Research needed: {'Yes' if section.research else 'No'}\n"
+    #     for section in sections
+    # )
 
-    # Get feedback on the report plan from interrupt
+    # # Get feedback on the report plan from interrupt
 
-    feedback = interrupt(f"Please provide feedback on the following report plan. \n\n{sections_str}\n\n Does the report plan meet your needs? Pass 'true' to approve the report plan or provide feedback to regenerate the report plan:")
-
+    # feedback = interrupt(f"Please provide feedback on the following report plan. \n\n{sections_str}\n\n Does the report plan meet your needs? Pass 'true' to approve the report plan or provide feedback to regenerate the report plan:")
+    feedback = True
     # If the user approves the report plan, kick off section writing
     # if isinstance(feedback, bool) and feedback is True:
     if isinstance(feedback, bool):
@@ -143,7 +145,7 @@ def generate_queries(state: SectionState, config: RunnableConfig):
 
     return {"search_queries": queries.queries}
 
-async def search_web(state: SectionState, config: RunnableConfig):
+def search_web(state: SectionState, config: RunnableConfig):
     """ Search the web for each query, then return a list of raw sources and a formatted string of sources."""
     
     # Get state 
@@ -155,18 +157,23 @@ async def search_web(state: SectionState, config: RunnableConfig):
     # Web search
     query_list = [query.search_query for query in search_queries]
     
-    # Get the search API
-    search_api = get_config_value(configurable.search_api)
+    # # Get the search API
+    # search_api = get_config_value(configurable.search_api)
 
-    # Search the web
-    if search_api == "tavily":
-        search_results = await tavily_search_async(query_list)
-        source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=5000, include_raw_content=True)
-    elif search_api == "perplexity":
-        search_results = perplexity_search(query_list)
-        source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=5000, include_raw_content=False)
-    else:
-        raise ValueError(f"Unsupported search API: {configurable.search_api}")
+    # # Search the web
+    # if search_api == "tavily":
+    #     search_results = await tavily_search_async(query_list)
+    #     source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=5000, include_raw_content=True)
+    # elif search_api == "perplexity":
+    #     search_results = perplexity_search(query_list)
+    #     source_str = deduplicate_and_format_sources(search_results, max_tokens_per_source=5000, include_raw_content=False)
+    # else:
+    #     raise ValueError(f"Unsupported search API: {configurable.search_api}")
+    source_str = """LangGraph is designed to enhance the efficiency of graph-based workflows by enabling parallel execution of nodes. This capability allows multiple independent tasks to be processed concurrently, significantly reducing overall execution time compared to sequential processing.
+
+                    Implementing Parallel Execution in LangGraph
+
+                    To implement parallel execution, you can define a graph where certain nodes operate concurrently. For example, consider a scenario where node A leads to two parallel nodes, B and C, which then converge into node D. In this setup, nodes B and C execute simultaneously after A completes, and D waits for both to finish before proceeding."""
 
     return {"source_str": source_str, "search_iterations": state["search_iterations"] + 1}
 
@@ -292,7 +299,7 @@ section_builder.add_edge("search_web", "write_section")
 # Add nodes
 builder = StateGraph(ReportState, input=ReportStateInput, output=ReportStateOutput, config_schema=Configuration)
 builder.add_node("generate_report_plan", generate_report_plan)
-builder.add_node("human_feedback", human_feedback)
+builder.add_node("feedback_on_plan", feedback_on_plan)
 builder.add_node("build_section_with_web_research", section_builder.compile())
 builder.add_node("gather_completed_sections", gather_completed_sections)
 builder.add_node("write_final_sections", write_final_sections)
@@ -300,7 +307,7 @@ builder.add_node("compile_final_report", compile_final_report)
 
 # Add edges
 builder.add_edge(START, "generate_report_plan")
-builder.add_edge("generate_report_plan", "human_feedback")
+builder.add_edge("generate_report_plan", "feedback_on_plan")
 builder.add_edge("build_section_with_web_research", "gather_completed_sections")
 builder.add_conditional_edges("gather_completed_sections", initiate_final_section_writing, ["write_final_sections"])
 builder.add_edge("write_final_sections", "compile_final_report")

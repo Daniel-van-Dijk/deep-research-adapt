@@ -42,9 +42,12 @@ class ReportStateInput(TypedDict):
     
 class ReportStateOutput(TypedDict):
     final_report: str # Final report
-
+    
 class ReportState(TypedDict):
-    topic: str # Report topic    
+    topic: str # Report topic
+    type : str # report type
+    reference : str # human blog   
+    formatted_metadata: str # input metadata 
     feedback_on_report_plan: str # Feedback on the report plan
     sections: list[Section] # List of report sections 
     completed_sections: Annotated[list, operator.add] # Send() API key
